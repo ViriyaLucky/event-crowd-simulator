@@ -236,7 +236,7 @@ function point(x,y){const{pad,s}=transform();return[pad+x*s,pad+y*s]}
 
 function visualRoute(){
   const r=venueRoute();
-  return [venue.waypoints.spawn, scenario.shoeDeposit.servicePoint, ...r.slice(1)];
+  return [venue.waypoints.spawn, scenario.shoeDeposit.queuePoint, scenario.shoeDeposit.servicePoint, ...r.slice(1)];
 }
 
 function drawRoute(){
@@ -257,8 +257,26 @@ function zoneColor(z){
 function drawScenario(){
   if(!scenario.shoeDeposit.enabled) return;
   const z=scenario.shoeDeposit.zone,[x,y,w,h]=rect(z);
-  ctx.fillStyle='#ffe8a3';ctx.fillRect(x,y,w,h);ctx.strokeStyle='#9a7b2f';ctx.strokeRect(x,y,w,h);
-  ctx.fillStyle='#303640';ctx.font='12px system-ui';ctx.textAlign='center';ctx.fillText(scenario.shoeDeposit.label,x+w/2,y+h/2+4);
+  const pics=Math.max(1,Math.floor(Number(ui.shoePics.value)||1));
+
+  ctx.save();
+  ctx.fillStyle='#ffe8a3';ctx.fillRect(x,y,w,h);
+  ctx.strokeStyle='#9a7b2f';ctx.lineWidth=2;ctx.strokeRect(x,y,w,h);
+  ctx.fillStyle='#5b4613';ctx.font='bold 12px system-ui';ctx.textAlign='center';
+  ctx.fillText('PENITIPAN SEPATU',x+w/2,y+14);
+
+  const slotW=w/pics;
+  for(let i=0;i<pics;i++){
+    const sx=x+i*slotW;
+    ctx.strokeStyle='#b79542';ctx.lineWidth=1;ctx.strokeRect(sx,y+18,slotW,h-20);
+    ctx.fillStyle='#5b4613';ctx.font='10px system-ui';ctx.fillText(`PIC ${i+1}`,sx+slotW/2,y+h-6);
+  }
+
+  const [qx,qy]=point(scenario.shoeDeposit.queuePoint.x,scenario.shoeDeposit.queuePoint.y);
+  ctx.beginPath();ctx.arc(qx,qy,7,0,Math.PI*2);ctx.fillStyle='rgba(229,57,53,.18)';ctx.fill();
+  ctx.strokeStyle='#e53935';ctx.setLineDash([4,3]);ctx.stroke();ctx.setLineDash([]);
+  ctx.fillStyle='#b42318';ctx.font='bold 10px system-ui';ctx.fillText('QUEUE',qx,qy+18);
+  ctx.restore();
 }
 
 function draw(){

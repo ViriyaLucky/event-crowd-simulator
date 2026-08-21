@@ -1,88 +1,25 @@
 import { NavigationGrid } from './navigation.js';
+import { DensityTracker } from './density.js';
 
-const canvas = document.querySelector('#sim');
-const ctx = canvas.getContext('2d');
-const ui = Object.fromEntries(['simTime','spawned','shoeQueue','completed','peakQueue','runStatus','attendees','arrivalMinutes','shoePics','serviceSeconds','speed','start','pause'].map(id => [id, document.querySelector('#'+id)]));
-
-let venue, nav;
-let agents=[]; let simTime=0; let running=false; let last=performance.now(); let peakQueue=0; let nextId=1; let serviceSlots=[];
-const stateColor={walking:'#1976d2',queue:'#e53935',served:'#43a047'};
-const BODY_RADIUS=.28, COMFORT_RADIUS=.75, MAX_NEIGHBOR_RADIUS=1.8;
-
-async function init(){ venue=await fetch('./data/venues/wihara-floor1.json').then(r=>r.json()); nav=new NavigationGrid(venue,1); reset(); requestAnimationFrame(loop); }
-function reset(){ agents=[];simTime=0;peakQueue=0;nextId=1;serviceSlots=[];running=true;ui.runStatus.textContent='RUNNING';ui.pause.textContent='Pause'; }
-
+const canvas=document.querySelector('#sim'),ctx=canvas.getContext('2d');
+const ids=['simTime','spawned','shoeQueue','completed','peakQueue','runStatus','attendees','arrivalMinutes','shoePics','serviceSeconds','speed','start','pause','heatmap','currentDensity','peakDensity','congestion'];
+const ui=Object.fromEntries(ids.map(id=>[id,document.querySelector('#'+id)]));
+let venue,nav,density,lastDensity={currentPeak:0,currentCell:null};let agents=[],simTime=0,running=false,last=performance.now(),peakQueue=0,nextId=1,serviceSlots=[];
+const stateColor={walking:'#1976d2',queue:'#e53935',served:'#43a047'},BODY_RADIUS=.28,COMFORT_RADIUS=.75,MAX_NEIGHBOR_RADIUS=1.8;
+async function init(){venue=await fetch('./data/venues/wihara-floor1.json').then(r=>r.json());nav=new NavigationGrid(venue,1);density=new DensityTracker(venue,4);reset();requestAnimationFrame(loop)}
+function reset(){agents=[];simTime=0;peakQueue=0;nextId=1;serviceSlots=[];density.peakDensity=0;density.peakCell=null;lastDensity={currentPeak:0,currentCell:null};running=true;ui.runStatus.textContent='RUNNING';ui.pause.textContent='Pause'}
 const stageTargets=()=>[venue.waypoints.clear,venue.waypoints.shoeQueue,venue.waypoints.shoeService,venue.waypoints.stairs];
-function setPath(a,target){ a.path=nav.findPath({x:a.x,y:a.y},target); a.pathIndex=Math.min(1,a.path.length-1); }
-function spawnAgent(){ const p=venue.waypoints.spawn; const a={id:nextId++,x:p.x+(Math.random()-.5)*3,y:p.y+(Math.random()-.5),speed:.9+Math.random()*.5,state:'walking',stage:0,serviceRemaining:0,done:false,path:[],pathIndex:0}; setPath(a,stageTargets()[0]); agents.push(a); }
-
-function separationVector(a){
-  let sx=0,sy=0,count=0;
-  for(const b of agents){
-    if(b===a||b.done||b.state==='service') continue;
-    const dx=a.x-b.x,dy=a.y-b.y,d=Math.hypot(dx,dy);
-    if(d>0&&d<MAX_NEIGHBOR_RADIUS){ const strength=d<COMFORT_RADIUS?(COMFORT_RADIUS-d)/COMFORT_RADIUS:.08*(MAX_NEIGHBOR_RADIUS-d)/MAX_NEIGHBOR_RADIUS; sx+=dx/d*strength;sy+=dy/d*strength;count++; }
-  }
-  return count?{x:sx/count,y:sy/count}:{x:0,y:0};
-}
-
-function positionBlocked(x,y,a){
-  const cell=nav.toCell({x,y}); if(nav.isBlocked(cell.c,cell.r)) return true;
-  for(const b of agents){ if(b===a||b.done||b.state==='service'||b.state==='queue') continue; if(Math.hypot(x-b.x,y-b.y)<BODY_RADIUS*2) return true; }
-  return false;
-}
-
-function moveAlongPath(a,dt){
-  if(!a.path?.length) setPath(a,stageTargets()[a.stage]);
-  const node=a.path[Math.min(a.pathIndex,a.path.length-1)];
-  const dx=node.x-a.x,dy=node.y-a.y,d=Math.hypot(dx,dy);
-  if(d<.4){
-    if(a.pathIndex<a.path.length-1){a.pathIndex++;return false;}
-    return true;
-  }
-  const sep=separationVector(a); let vx=dx/d+sep.x*1.5,vy=dy/d+sep.y*1.5; const vl=Math.hypot(vx,vy)||1;vx/=vl;vy/=vl;
-  const step=Math.min(d,a.speed*dt),nx=a.x+vx*step,ny=a.y+vy*step;
-  if(!positionBlocked(nx,ny,a)){a.x=nx;a.y=ny;}
-  else {
-    // Try small lateral steering before stopping. This avoids perfectly rigid queues.
-    for(const sign of [1,-1]){const lx=a.x+(-vy)*step*.6*sign,ly=a.y+vx*step*.6*sign;if(!positionBlocked(lx,ly,a)){a.x=lx;a.y=ly;break;}}
-  }
-  return false;
-}
-
-function advanceStage(a){
-  if(a.stage===0){a.stage=1;setPath(a,stageTargets()[1]);}
-  else if(a.stage===1){a.state='queue';a.path=[];}
-  else if(a.stage===3){a.done=true;}
-}
-
-function update(dt){
-  simTime+=dt; const total=+ui.attendees.value,arrivalSeconds=Math.max(1,+ui.arrivalMinutes.value*60),expected=Math.min(total,Math.floor(total*Math.min(1,simTime/arrivalSeconds)));
-  while(agents.length<expected) spawnAgent();
-  const pics=Math.max(1,+ui.shoePics.value),meanService=Math.max(2,+ui.serviceSeconds.value);
-  peakQueue=Math.max(peakQueue,agents.filter(a=>a.state==='queue').length);
-
-  for(const a of agents){
-    if(a.done||a.state==='queue')continue;
-    if(a.state==='service'){a.serviceRemaining-=dt;if(a.serviceRemaining<=0){a.state='served';a.stage=3;serviceSlots=serviceSlots.filter(id=>id!==a.id);setPath(a,stageTargets()[3]);}continue;}
-    if(moveAlongPath(a,dt)) advanceStage(a);
-  }
-
-  const waiting=agents.filter(a=>a.state==='queue').sort((a,b)=>a.id-b.id);
-  while(serviceSlots.length<pics&&waiting.length){const a=waiting.shift();a.state='service';a.stage=2;a.x=venue.waypoints.shoeService.x+(serviceSlots.length-(pics-1)/2)*.65;a.y=venue.waypoints.shoeService.y;a.serviceRemaining=meanService*(.75+Math.random()*.5);serviceSlots.push(a.id);}
-
-  // Queue positions remain explicit service-line slots; walking agents use physical spacing/collision.
-  agents.filter(a=>a.state==='queue').forEach((a,i)=>{const cols=12;a.x=venue.waypoints.shoeQueue.x+(i%cols)*.6-cols*.3;a.y=venue.waypoints.shoeQueue.y+Math.floor(i/cols)*.6;});
-}
-
-function transform(){const pad=25,sx=(canvas.width-pad*2)/venue.bounds.width,sy=(canvas.height-pad*2)/venue.bounds.height;return{pad,s:Math.min(sx,sy)}}
-function rect(z){const{pad,s}=transform();return[pad+z.x*s,pad+z.y*s,z.w*s,z.h*s]}
-function point(x,y){const{pad,s}=transform();return[pad+x*s,pad+y*s]}
-function draw(){
-  ctx.clearRect(0,0,canvas.width,canvas.height);ctx.fillStyle='#f8fafc';ctx.fillRect(0,0,canvas.width,canvas.height);
-  for(const z of venue.zones){const[x,y,w,h]=rect(z);ctx.fillStyle=z.type==='blocked'?'#d9dde3':z.type==='service'?'#ffe8a3':z.type==='destination'?'#cdeccf':z.type==='spawn'?'#cfe3ff':z.type==='event_reference'?'#eee3d4':'#e4f3dc';ctx.fillRect(x,y,w,h);ctx.strokeStyle='#7b8491';ctx.strokeRect(x,y,w,h);ctx.fillStyle='#303640';ctx.font='12px system-ui';ctx.textAlign='center';ctx.fillText(z.label,x+w/2,y+h/2+4);}
-  for(const a of agents){if(a.done)continue;const[x,y]=point(a.x,a.y);ctx.beginPath();ctx.arc(x,y,3.2,0,Math.PI*2);ctx.fillStyle=a.state==='queue'?stateColor.queue:(a.state==='service'||a.state==='served'?stateColor.served:stateColor.walking);ctx.fill();}
-}
-function updateUi(){const q=agents.filter(a=>a.state==='queue').length;ui.simTime.textContent=`${String(Math.floor(simTime/60)).padStart(2,'0')}:${String(Math.floor(simTime%60)).padStart(2,'0')}`;ui.spawned.textContent=agents.length;ui.shoeQueue.textContent=q;ui.completed.textContent=agents.filter(a=>a.done).length;ui.peakQueue.textContent=peakQueue;}
-function loop(now){const realDt=Math.min(.05,(now-last)/1000);last=now;if(running)update(realDt*(+ui.speed.value));draw();updateUi();requestAnimationFrame(loop);}
-ui.start.addEventListener('click',reset);ui.pause.addEventListener('click',()=>{running=!running;ui.pause.textContent=running?'Pause':'Resume';ui.runStatus.textContent=running?'RUNNING':'PAUSED';});init();
+function setPath(a,target){a.path=nav.findPath({x:a.x,y:a.y},target);a.pathIndex=Math.min(1,a.path.length-1)}
+function spawnAgent(){const p=venue.waypoints.spawn,a={id:nextId++,x:p.x+(Math.random()-.5)*3,y:p.y+(Math.random()-.5),speed:.9+Math.random()*.5,state:'walking',stage:0,serviceRemaining:0,done:false,path:[],pathIndex:0};setPath(a,stageTargets()[0]);agents.push(a)}
+function separationVector(a){let sx=0,sy=0,count=0;for(const b of agents){if(b===a||b.done||b.state==='service')continue;const dx=a.x-b.x,dy=a.y-b.y,d=Math.hypot(dx,dy);if(d>0&&d<MAX_NEIGHBOR_RADIUS){const strength=d<COMFORT_RADIUS?(COMFORT_RADIUS-d)/COMFORT_RADIUS:.08*(MAX_NEIGHBOR_RADIUS-d)/MAX_NEIGHBOR_RADIUS;sx+=dx/d*strength;sy+=dy/d*strength;count++}}return count?{x:sx/count,y:sy/count}:{x:0,y:0}}
+function positionBlocked(x,y,a){const cell=nav.toCell({x,y});if(nav.isBlocked(cell.c,cell.r))return true;for(const b of agents){if(b===a||b.done||b.state==='service'||b.state==='queue')continue;if(Math.hypot(x-b.x,y-b.y)<BODY_RADIUS*2)return true}return false}
+function moveAlongPath(a,dt){if(!a.path?.length)setPath(a,stageTargets()[a.stage]);const node=a.path[Math.min(a.pathIndex,a.path.length-1)],dx=node.x-a.x,dy=node.y-a.y,d=Math.hypot(dx,dy);if(d<.4){if(a.pathIndex<a.path.length-1){a.pathIndex++;return false}return true}const sep=separationVector(a);let vx=dx/d+sep.x*1.5,vy=dy/d+sep.y*1.5,vl=Math.hypot(vx,vy)||1;vx/=vl;vy/=vl;const step=Math.min(d,a.speed*dt),nx=a.x+vx*step,ny=a.y+vy*step;if(!positionBlocked(nx,ny,a)){a.x=nx;a.y=ny}else for(const sign of[1,-1]){const lx=a.x+(-vy)*step*.6*sign,ly=a.y+vx*step*.6*sign;if(!positionBlocked(lx,ly,a)){a.x=lx;a.y=ly;break}}return false}
+function advanceStage(a){if(a.stage===0){a.stage=1;setPath(a,stageTargets()[1])}else if(a.stage===1){a.state='queue';a.path=[]}else if(a.stage===3)a.done=true}
+function update(dt){simTime+=dt;const total=+ui.attendees.value,arrivalSeconds=Math.max(1,+ui.arrivalMinutes.value*60),expected=Math.min(total,Math.floor(total*Math.min(1,simTime/arrivalSeconds)));while(agents.length<expected)spawnAgent();const pics=Math.max(1,+ui.shoePics.value),meanService=Math.max(2,+ui.serviceSeconds.value);peakQueue=Math.max(peakQueue,agents.filter(a=>a.state==='queue').length);for(const a of agents){if(a.done||a.state==='queue')continue;if(a.state==='service'){a.serviceRemaining-=dt;if(a.serviceRemaining<=0){a.state='served';a.stage=3;serviceSlots=serviceSlots.filter(id=>id!==a.id);setPath(a,stageTargets()[3])}continue}if(moveAlongPath(a,dt))advanceStage(a)}const waiting=agents.filter(a=>a.state==='queue').sort((a,b)=>a.id-b.id);while(serviceSlots.length<pics&&waiting.length){const a=waiting.shift();a.state='service';a.stage=2;a.x=venue.waypoints.shoeService.x+(serviceSlots.length-(pics-1)/2)*.65;a.y=venue.waypoints.shoeService.y;a.serviceRemaining=meanService*(.75+Math.random()*.5);serviceSlots.push(a.id)}agents.filter(a=>a.state==='queue').forEach((a,i)=>{const cols=12;a.x=venue.waypoints.shoeQueue.x+(i%cols)*.6-cols*.3;a.y=venue.waypoints.shoeQueue.y+Math.floor(i/cols)*.6});lastDensity=density.update(agents)}
+function transform(){const pad=25,sx=(canvas.width-pad*2)/venue.bounds.width,sy=(canvas.height-pad*2)/venue.bounds.height;return{pad,s:Math.min(sx,sy)}}function rect(z){const{pad,s}=transform();return[pad+z.x*s,pad+z.y*s,z.w*s,z.h*s]}function point(x,y){const{pad,s}=transform();return[pad+x*s,pad+y*s]}
+function heatColor(severity){return severity==='critical'?'rgba(220,38,38,.42)':severity==='high'?'rgba(234,88,12,.34)':severity==='busy'?'rgba(234,179,8,.28)':'rgba(250,204,21,.12)'}
+function drawHeatmap(){if(!ui.heatmap.checked)return;for(const cell of density.cells()){const[x,y,w,h]=rect(cell);ctx.fillStyle=heatColor(cell.severity);ctx.fillRect(x,y,w,h)}}
+function draw(){ctx.clearRect(0,0,canvas.width,canvas.height);ctx.fillStyle='#f8fafc';ctx.fillRect(0,0,canvas.width,canvas.height);for(const z of venue.zones){const[x,y,w,h]=rect(z);ctx.fillStyle=z.type==='blocked'?'#d9dde3':z.type==='service'?'#ffe8a3':z.type==='destination'?'#cdeccf':z.type==='spawn'?'#cfe3ff':z.type==='event_reference'?'#eee3d4':'#e4f3dc';ctx.fillRect(x,y,w,h);ctx.strokeStyle='#7b8491';ctx.strokeRect(x,y,w,h);ctx.fillStyle='#303640';ctx.font='12px system-ui';ctx.textAlign='center';ctx.fillText(z.label,x+w/2,y+h/2+4)}drawHeatmap();for(const a of agents){if(a.done)continue;const[x,y]=point(a.x,a.y);ctx.beginPath();ctx.arc(x,y,3.2,0,Math.PI*2);ctx.fillStyle=a.state==='queue'?stateColor.queue:(a.state==='service'||a.state==='served'?stateColor.served:stateColor.walking);ctx.fill()}}
+function updateUi(){const q=agents.filter(a=>a.state==='queue').length,current=lastDensity.currentPeak||0,severity=density.severity(current);ui.simTime.textContent=`${String(Math.floor(simTime/60)).padStart(2,'0')}:${String(Math.floor(simTime%60)).padStart(2,'0')}`;ui.spawned.textContent=agents.length;ui.shoeQueue.textContent=q;ui.completed.textContent=agents.filter(a=>a.done).length;ui.peakQueue.textContent=peakQueue;ui.currentDensity.textContent=`${current.toFixed(2)} /m²`;ui.peakDensity.textContent=`${density.peakDensity.toFixed(2)} /m²`;ui.congestion.textContent=severity.toUpperCase()}
+function loop(now){const realDt=Math.min(.05,(now-last)/1000);last=now;if(running)update(realDt*(+ui.speed.value));draw();updateUi();requestAnimationFrame(loop)}
+ui.start.addEventListener('click',reset);ui.pause.addEventListener('click',()=>{running=!running;ui.pause.textContent=running?'Pause':'Resume';ui.runStatus.textContent=running?'RUNNING':'PAUSED'});init();

@@ -15,7 +15,8 @@ export class NavigationGrid {
   isBlocked(c, r) { return !this.valid(c, r) || this.blocked[this.key(c, r)] === 1; }
 
   build() {
-    for (const z of this.venue.zones.filter(z => z.type === 'blocked')) {
+    const nonWalkableTypes = new Set(['blocked', 'seating']);
+    for (const z of this.venue.zones.filter(z => nonWalkableTypes.has(z.type))) {
       const minC = Math.floor(z.x / this.cellSize), maxC = Math.ceil((z.x + z.w) / this.cellSize);
       const minR = Math.floor(z.y / this.cellSize), maxR = Math.ceil((z.y + z.h) / this.cellSize);
       for (let r = minR; r < maxR; r++) for (let c = minC; c < maxC; c++) if (this.valid(c, r)) this.blocked[this.key(c, r)] = 1;

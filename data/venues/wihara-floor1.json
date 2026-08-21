@@ -4,33 +4,32 @@
   "units": "meters",
   "confidence": "estimated",
   "calibration": {
-    "knownReference": "parking/tikar span",
+    "knownReference": "parking length",
     "knownLengthMeters": 80,
-    "note": "All other POC dimensions are approximate and should not be used as safety/capacity certification."
+    "note": "Layout topology follows the user-confirmed sketch. Dimensions other than the 80 m parking length remain approximate."
   },
-  "bounds": { "width": 90, "height": 55 },
+  "bounds": { "width": 100, "height": 50 },
   "zones": [
-    { "id": "road", "type": "blocked", "label": "Jalan Raya", "x": 0, "y": 49, "w": 90, "h": 6 },
-    { "id": "tikar-left", "type": "event_reference", "label": "Tikar", "x": 3, "y": 31, "w": 18, "h": 15 },
-    { "id": "tikar-mid", "type": "event_reference", "label": "Tikar", "x": 23, "y": 31, "w": 18, "h": 15 },
-    { "id": "clear-area", "type": "walkable", "label": "Clear Area", "x": 44, "y": 31, "w": 14, "h": 14 },
-    { "id": "tikar-right", "type": "event_reference", "label": "Tikar", "x": 60, "y": 31, "w": 27, "h": 15 },
-    { "id": "aula-makan", "type": "blocked", "label": "Aula Makan", "x": 67, "y": 12, "w": 20, "h": 17 },
-    { "id": "cafe", "type": "blocked", "label": "Cafe", "x": 33, "y": 12, "w": 8, "h": 9 },
-    { "id": "lift", "type": "blocked", "label": "Lift", "x": 41, "y": 12, "w": 6, "h": 9 },
-    { "id": "admin", "type": "blocked", "label": "Admin WES", "x": 55, "y": 12, "w": 5, "h": 9 },
-    { "id": "stairs", "type": "destination", "label": "Stairs to Floor 2", "x": 47, "y": 12, "w": 7, "h": 9 },
-    { "id": "shoe", "type": "service", "label": "Tempat Sepatu", "x": 35, "y": 25.5, "w": 18, "h": 3 },
-    { "id": "gate", "type": "spawn", "label": "Gerbang", "x": 44, "y": 46, "w": 14, "h": 3 }
+    { "id": "parking", "type": "walkable", "label": "Parkiran / Tikar saat event", "x": 5, "y": 4, "w": 90, "h": 24 },
+    { "id": "gate", "type": "spawn", "label": "Gerbang", "x": 43, "y": 0, "w": 14, "h": 4 },
+    { "id": "kitchen", "type": "blocked", "label": "Dapur", "x": 5, "y": 32, "w": 18, "h": 14 },
+    { "id": "stairs", "type": "destination", "label": "Tangga ke Lt 2", "x": 31, "y": 35, "w": 7, "h": 8 },
+    { "id": "toilet-men", "type": "blocked", "label": "WC Pria", "x": 40, "y": 35, "w": 5, "h": 8 },
+    { "id": "lift", "type": "blocked", "label": "Lift", "x": 45, "y": 35, "w": 6, "h": 8 },
+    { "id": "toilet-women", "type": "blocked", "label": "WC Wanita", "x": 51, "y": 35, "w": 5, "h": 8 },
+    { "id": "cafe", "type": "blocked", "label": "Cafe", "x": 57, "y": 32, "w": 14, "h": 11 },
+    { "id": "storage", "type": "blocked", "label": "Ruang", "x": 72, "y": 35, "w": 7, "h": 8 },
+    { "id": "vihara-entry", "type": "walkable", "label": "Masuk Vihara", "x": 80, "y": 35, "w": 7, "h": 8 },
+    { "id": "hiolo", "type": "walkable", "label": "Area Hiolo", "x": 87, "y": 29, "w": 10, "h": 17 },
+    { "id": "corridor", "type": "walkable", "label": "Samping Cafe / Jalur Umat", "x": 23, "y": 43, "w": 64, "h": 4 }
   ],
   "waypoints": {
-    "spawn": { "x": 51, "y": 47 },
-    "clear": { "x": 51, "y": 37 },
-    "shoeQueue": { "x": 49, "y": 29 },
-    "shoeService": { "x": 44, "y": 27 },
-    "cafeApproach": { "x": 31, "y": 24 },
-    "cafeTurn": { "x": 30, "y": 18 },
-    "cafeExit": { "x": 43, "y": 10 },
-    "stairs": { "x": 50.5, "y": 17 }
+    "spawn": { "x": 50, "y": 3 },
+    "parking": { "x": 80, "y": 20 },
+    "hiolo": { "x": 92, "y": 37 },
+    "viharaEntry": { "x": 83, "y": 39 },
+    "cafeSide": { "x": 68, "y": 45 },
+    "toiletLiftLine": { "x": 49, "y": 45 },
+    "stairs": { "x": 34.5, "y": 39 }
   }
 }

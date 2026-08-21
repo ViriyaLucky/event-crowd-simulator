@@ -23,6 +23,10 @@
     { "id": "hiolo", "type": "walkable", "label": "Area Hiolo", "x": 87, "y": 29, "w": 10, "h": 17 },
     { "id": "corridor", "type": "walkable", "label": "Samping Cafe / Jalur Umat", "x": 23, "y": 43, "w": 64, "h": 4 }
   ],
+  "flow": {
+    "ingress": ["spawn", "parking", "hiolo", "viharaEntry", "cafeSide", "toiletLiftLine", "stairs"],
+    "rule": "Attendees cannot enter the vihara directly from parking. They must first reach Area Hiolo, then use Masuk Vihara."
+  },
   "waypoints": {
     "spawn": { "x": 50, "y": 3 },
     "parking": { "x": 80, "y": 20 },

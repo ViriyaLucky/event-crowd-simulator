@@ -28,6 +28,9 @@
     "clear": { "x": 51, "y": 37 },
     "shoeQueue": { "x": 49, "y": 29 },
     "shoeService": { "x": 44, "y": 27 },
+    "cafeApproach": { "x": 31, "y": 24 },
+    "cafeTurn": { "x": 30, "y": 18 },
+    "cafeExit": { "x": 43, "y": 10 },
     "stairs": { "x": 50.5, "y": 17 }
   }
 }

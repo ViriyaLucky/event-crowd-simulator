@@ -1,0 +1,33 @@
+{
+  "id": "wihara-floor1-poc",
+  "name": "Wihara Floor 1 (POC)",
+  "units": "meters",
+  "confidence": "estimated",
+  "calibration": {
+    "knownReference": "parking/tikar span",
+    "knownLengthMeters": 80,
+    "note": "All other POC dimensions are approximate and should not be used as safety/capacity certification."
+  },
+  "bounds": { "width": 90, "height": 55 },
+  "zones": [
+    { "id": "road", "type": "blocked", "label": "Jalan Raya", "x": 0, "y": 49, "w": 90, "h": 6 },
+    { "id": "tikar-left", "type": "event_reference", "label": "Tikar", "x": 3, "y": 31, "w": 18, "h": 15 },
+    { "id": "tikar-mid", "type": "event_reference", "label": "Tikar", "x": 23, "y": 31, "w": 18, "h": 15 },
+    { "id": "clear-area", "type": "walkable", "label": "Clear Area", "x": 44, "y": 31, "w": 14, "h": 14 },
+    { "id": "tikar-right", "type": "event_reference", "label": "Tikar", "x": 60, "y": 31, "w": 27, "h": 15 },
+    { "id": "aula-makan", "type": "blocked", "label": "Aula Makan", "x": 67, "y": 12, "w": 20, "h": 17 },
+    { "id": "cafe", "type": "blocked", "label": "Cafe", "x": 33, "y": 12, "w": 8, "h": 9 },
+    { "id": "lift", "type": "blocked", "label": "Lift", "x": 41, "y": 12, "w": 6, "h": 9 },
+    { "id": "admin", "type": "blocked", "label": "Admin WES", "x": 55, "y": 12, "w": 5, "h": 9 },
+    { "id": "stairs", "type": "destination", "label": "Stairs to Floor 2", "x": 47, "y": 12, "w": 7, "h": 9 },
+    { "id": "shoe", "type": "service", "label": "Tempat Sepatu", "x": 35, "y": 25.5, "w": 18, "h": 3 },
+    { "id": "gate", "type": "spawn", "label": "Gerbang", "x": 44, "y": 46, "w": 14, "h": 3 }
+  ],
+  "waypoints": {
+    "spawn": { "x": 51, "y": 47 },
+    "clear": { "x": 51, "y": 37 },
+    "shoeQueue": { "x": 49, "y": 29 },
+    "shoeService": { "x": 44, "y": 27 },
+    "stairs": { "x": 50.5, "y": 17 }
+  }
+}

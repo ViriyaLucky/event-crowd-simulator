@@ -6,27 +6,27 @@
   "calibration": {
     "knownReference": "parking length",
     "knownLengthMeters": 80,
-    "note": "Topology follows the latest user-confirmed sketch. Dimensions other than the 80 m parking length remain approximate."
+    "note": "Topology follows the latest user-confirmed orientation. Dimensions other than the 80 m parking length remain approximate."
   },
   "bounds": { "width": 100, "height": 50 },
   "zones": [
     { "id": "gate", "type": "spawn", "label": "Gerbang", "x": 43, "y": 0, "w": 14, "h": 4 },
     { "id": "parking", "type": "walkable", "label": "Parkiran / Tikar saat event", "x": 5, "y": 4, "w": 90, "h": 24 },
 
-    { "id": "jalan-umat", "type": "walkable", "label": "Area Jalan Umat", "x": 23, "y": 29, "w": 64, "h": 5 },
+    { "id": "jalan-umat", "type": "walkable", "label": "Area Jalan Umat", "x": 13, "y": 29, "w": 64, "h": 5 },
 
-    { "id": "kitchen", "type": "blocked", "label": "Dapur", "x": 5, "y": 32, "w": 18, "h": 14 },
-    { "id": "emergency-area", "type": "blocked", "label": "Meja / Pintu Darurat", "x": 23, "y": 35, "w": 8, "h": 8 },
-    { "id": "stairs", "type": "destination", "label": "Tangga ke Lt 2", "x": 31, "y": 35, "w": 7, "h": 8 },
-    { "id": "toilet-men", "type": "blocked", "label": "WC Pria", "x": 40, "y": 35, "w": 5, "h": 8 },
-    { "id": "lift", "type": "blocked", "label": "Lift", "x": 45, "y": 35, "w": 6, "h": 8 },
-    { "id": "toilet-women", "type": "blocked", "label": "WC Wanita", "x": 51, "y": 35, "w": 5, "h": 8 },
-    { "id": "cafe", "type": "blocked", "label": "Cafe", "x": 57, "y": 35, "w": 14, "h": 8 },
-    { "id": "storage", "type": "blocked", "label": "Ruang", "x": 72, "y": 35, "w": 7, "h": 8 },
-    { "id": "vihara-entry", "type": "walkable", "label": "Masuk Vihara", "x": 80, "y": 35, "w": 7, "h": 8 },
-    { "id": "hiolo", "type": "walkable", "label": "Area Hiolo", "x": 87, "y": 29, "w": 10, "h": 17 },
+    { "id": "hiolo", "type": "walkable", "label": "Area Hiolo", "x": 3, "y": 29, "w": 10, "h": 17 },
+    { "id": "vihara-entry", "type": "walkable", "label": "Masuk Vihara", "x": 13, "y": 35, "w": 7, "h": 8 },
+    { "id": "storage", "type": "blocked", "label": "Ruang", "x": 21, "y": 35, "w": 7, "h": 8 },
+    { "id": "cafe", "type": "blocked", "label": "Cafe", "x": 29, "y": 35, "w": 14, "h": 8 },
+    { "id": "toilet-women", "type": "blocked", "label": "WC Wanita", "x": 44, "y": 35, "w": 5, "h": 8 },
+    { "id": "lift", "type": "blocked", "label": "Lift", "x": 49, "y": 35, "w": 6, "h": 8 },
+    { "id": "toilet-men", "type": "blocked", "label": "WC Pria", "x": 55, "y": 35, "w": 5, "h": 8 },
+    { "id": "stairs", "type": "destination", "label": "Tangga ke Lt 2", "x": 62, "y": 35, "w": 7, "h": 8 },
+    { "id": "emergency-area", "type": "blocked", "label": "Meja / Pintu Darurat", "x": 69, "y": 35, "w": 8, "h": 8 },
+    { "id": "kitchen", "type": "blocked", "label": "Dapur", "x": 77, "y": 32, "w": 18, "h": 14 },
 
-    { "id": "cafe-seating", "type": "seating", "label": "Samping Cafe - Area Duduk (bukan jalan)", "x": 57, "y": 43, "w": 22, "h": 4 }
+    { "id": "cafe-seating", "type": "seating", "label": "Samping Cafe - Area Duduk (bukan jalan)", "x": 21, "y": 43, "w": 22, "h": 4 }
   ],
   "flow": {
     "ingress": [
@@ -39,16 +39,16 @@
       "stairsEntry",
       "stairs"
     ],
-    "rule": "Gerbang -> Parkiran -> Area Hiolo -> Masuk Vihara -> Area Jalan Umat -> Tangga. Samping Cafe is an attendee seating area and must never be used as the ingress route."
+    "rule": "Gerbang -> Parkiran -> Area Hiolo -> Masuk Vihara -> Area Jalan Umat -> move right along Area Jalan Umat -> Tangga. Samping Cafe is seating and never part of ingress."
   },
   "waypoints": {
     "spawn": { "x": 50, "y": 3 },
-    "parking": { "x": 92, "y": 20 },
-    "hiolo": { "x": 92, "y": 37 },
-    "viharaEntry": { "x": 83.5, "y": 39 },
-    "jalanUmatEntry": { "x": 83.5, "y": 31.5 },
-    "jalanUmat": { "x": 60, "y": 31.5 },
-    "stairsEntry": { "x": 34.5, "y": 31.5 },
-    "stairs": { "x": 34.5, "y": 39 }
+    "parking": { "x": 8, "y": 20 },
+    "hiolo": { "x": 8, "y": 37 },
+    "viharaEntry": { "x": 16.5, "y": 39 },
+    "jalanUmatEntry": { "x": 16.5, "y": 31.5 },
+    "jalanUmat": { "x": 40, "y": 31.5 },
+    "stairsEntry": { "x": 65.5, "y": 31.5 },
+    "stairs": { "x": 65.5, "y": 39 }
   }
 }

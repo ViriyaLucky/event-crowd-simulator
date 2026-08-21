@@ -4,14 +4,14 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Event Crowd Simulator POC</title>
-  <link rel="stylesheet" href="styles.css?v=20260821-3" />
+  <link rel="stylesheet" href="styles.css?v=20260821-4" />
 </head>
 <body>
   <main>
     <header>
       <div>
         <h1>Event Crowd Simulator</h1>
-        <p>Floor 1 POC — build 2026-08-21.3</p>
+        <p>Floor 1 POC — build 2026-08-21.4</p>
       </div>
       <div class="status"><span id="runStatus">READY</span></div>
     </header>
@@ -19,6 +19,8 @@
     <section class="metrics">
       <article><small>Sim time</small><strong id="simTime">00:00</strong></article>
       <article><small>Spawned</small><strong id="spawned">0</strong></article>
+      <article><small>Shoe queue</small><strong id="shoeQueue">0</strong></article>
+      <article><small>Avg shoe wait</small><strong id="avgShoeWait">0:00</strong></article>
       <article><small>Reached stairs</small><strong id="completed">0</strong></article>
     </section>
 
@@ -26,6 +28,16 @@
       <aside>
         <label>Attendees <input id="attendees" type="number" min="1" max="3000" value="500" /></label>
         <label>Arrival duration (min) <input id="arrivalMinutes" type="number" min="1" max="180" value="20" /></label>
+
+        <label>Walking speed avg (m/s) <input id="walkAvg" type="number" min="0.3" max="2.5" step="0.05" value="1.10" /></label>
+        <label>Walking speed min (m/s) <input id="walkMin" type="number" min="0.2" max="2.5" step="0.05" value="0.80" /></label>
+        <label>Walking speed max (m/s) <input id="walkMax" type="number" min="0.3" max="3" step="0.05" value="1.40" /></label>
+
+        <label>Shoe PICs <input id="shoePics" type="number" min="1" max="30" value="6" /></label>
+        <label>Shoe service avg (sec) <input id="shoeServiceAvg" type="number" min="1" max="180" value="12" /></label>
+        <label>Shoe service min (sec) <input id="shoeServiceMin" type="number" min="1" max="180" value="8" /></label>
+        <label>Shoe service max (sec) <input id="shoeServiceMax" type="number" min="1" max="300" value="20" /></label>
+
         <label>Simulation speed
           <select id="speed">
             <option value="1">1x</option>
@@ -38,7 +50,9 @@
         <button id="pause" class="secondary">Pause</button>
         <div class="legend">
           <p><span class="dot walking"></span> Walking attendee</p>
-          <p>Ingress: Gerbang → Parkiran → Hiolo → Masuk Vihara → Area Jalan Umat → Tangga</p>
+          <p><span class="dot queue"></span> Waiting for shoe PIC</p>
+          <p><span class="dot served"></span> Shoe deposit service</p>
+          <p>Ingress: Gerbang → Penitipan Sepatu → Parkiran → Hiolo → Masuk Vihara → Area Jalan Umat → Tangga</p>
         </div>
         <p class="note">POC geometry is approximate. Parking length reference: 80 m.</p>
       </aside>
@@ -48,6 +62,6 @@
       </div>
     </section>
   </main>
-  <script type="module" src="src/app.js?v=20260821-3"></script>
+  <script type="module" src="src/app.js?v=20260821-4"></script>
 </body>
 </html>

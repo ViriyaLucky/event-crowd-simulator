@@ -8,49 +8,30 @@
 </head>
 <body>
   <main>
-    <header>
-      <div>
-        <h1>Event Crowd Simulator</h1>
-        <p>Floor 1 POC — estimated geometry calibrated from the 80 m parking span.</p>
-      </div>
-      <div class="status"><span id="runStatus">READY</span></div>
-    </header>
-
+    <header><div><h1>Event Crowd Simulator</h1><p>Floor 1 POC — estimated geometry calibrated from the 80 m parking span.</p></div><div class="status"><span id="runStatus">READY</span></div></header>
     <section class="metrics">
       <article><small>Sim time</small><strong id="simTime">00:00</strong></article>
       <article><small>Spawned</small><strong id="spawned">0</strong></article>
       <article><small>Shoe queue</small><strong id="shoeQueue">0</strong></article>
       <article><small>Reached stairs</small><strong id="completed">0</strong></article>
       <article><small>Peak queue</small><strong id="peakQueue">0</strong></article>
+      <article><small>Current max density</small><strong id="currentDensity">0.00 /m²</strong></article>
+      <article><small>Run peak density</small><strong id="peakDensity">0.00 /m²</strong></article>
+      <article><small>Congestion</small><strong id="congestion">NORMAL</strong></article>
     </section>
-
     <section class="workspace">
       <aside>
         <label>Attendees <input id="attendees" type="number" min="1" max="3000" value="500" /></label>
         <label>Arrival duration (min) <input id="arrivalMinutes" type="number" min="1" max="180" value="20" /></label>
         <label>Shoe PICs <input id="shoePics" type="number" min="1" max="30" value="6" /></label>
         <label>Avg shoe service (sec) <input id="serviceSeconds" type="number" min="2" max="120" value="12" /></label>
-        <label>Simulation speed
-          <select id="speed">
-            <option value="1">1x</option>
-            <option value="5">5x</option>
-            <option value="20" selected>20x</option>
-            <option value="60">60x</option>
-          </select>
-        </label>
-        <button id="start">Run / Reset</button>
-        <button id="pause" class="secondary">Pause</button>
-        <div class="legend">
-          <p><span class="dot walking"></span> Walking</p>
-          <p><span class="dot queue"></span> Shoe queue</p>
-          <p><span class="dot served"></span> Shoes handled</p>
-        </div>
-        <p class="note">POC geometry is intentionally approximate. Simulation coordinates use meters; visual scale is independent.</p>
+        <label>Simulation speed <select id="speed"><option value="1">1x</option><option value="5">5x</option><option value="20" selected>20x</option><option value="60">60x</option></select></label>
+        <label class="check"><input id="heatmap" type="checkbox" checked /> Show density heatmap</label>
+        <button id="start">Run / Reset</button><button id="pause" class="secondary">Pause</button>
+        <div class="legend"><p><span class="dot walking"></span> Walking</p><p><span class="dot queue"></span> Shoe queue</p><p><span class="dot served"></span> Shoes handled</p><p>Heatmap: yellow = busy, orange = high, red = critical.</p></div>
+        <p class="note">Density thresholds are exploratory POC indicators, not certified crowd-safety limits. Geometry remains approximate.</p>
       </aside>
-
-      <div class="canvas-wrap">
-        <canvas id="sim" width="1000" height="620"></canvas>
-      </div>
+      <div class="canvas-wrap"><canvas id="sim" width="1000" height="620"></canvas></div>
     </section>
   </main>
   <script type="module" src="src/app.js"></script>

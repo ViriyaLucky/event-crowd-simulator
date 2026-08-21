@@ -17,23 +17,23 @@
     { "id": "toilet-men", "type": "blocked", "label": "WC Pria", "x": 40, "y": 35, "w": 5, "h": 8 },
     { "id": "lift", "type": "blocked", "label": "Lift", "x": 45, "y": 35, "w": 6, "h": 8 },
     { "id": "toilet-women", "type": "blocked", "label": "WC Wanita", "x": 51, "y": 35, "w": 5, "h": 8 },
-    { "id": "cafe", "type": "blocked", "label": "Cafe", "x": 57, "y": 32, "w": 14, "h": 11 },
+    { "id": "cafe", "type": "blocked", "label": "Cafe", "x": 57, "y": 35, "w": 14, "h": 8 },
     { "id": "storage", "type": "blocked", "label": "Ruang", "x": 72, "y": 35, "w": 7, "h": 8 },
     { "id": "vihara-entry", "type": "walkable", "label": "Masuk Vihara", "x": 80, "y": 35, "w": 7, "h": 8 },
     { "id": "hiolo", "type": "walkable", "label": "Area Hiolo", "x": 87, "y": 29, "w": 10, "h": 17 },
-    { "id": "corridor", "type": "walkable", "label": "Samping Cafe / Jalur Umat", "x": 23, "y": 43, "w": 64, "h": 4 }
+    { "id": "jalan-umat", "type": "walkable", "label": "Area Jalan Umat", "x": 23, "y": 29, "w": 64, "h": 5 },
+    { "id": "cafe-seating", "type": "blocked", "label": "Samping Cafe - Area Duduk", "x": 57, "y": 43, "w": 22, "h": 4 }
   ],
   "flow": {
-    "ingress": ["spawn", "parking", "hiolo", "viharaEntry", "cafeSide", "toiletLiftLine", "stairs"],
-    "rule": "Attendees cannot enter the vihara directly from parking. They must first reach Area Hiolo, then use Masuk Vihara."
+    "ingress": ["spawn", "parking", "hiolo", "viharaEntry", "jalanUmat", "stairs"],
+    "rule": "Ingress is Gerbang -> Parkiran -> Area Hiolo -> Masuk Vihara -> Area Jalan Umat -> Tangga. Samping Cafe is a seating area and is not a pedestrian route."
   },
   "waypoints": {
     "spawn": { "x": 50, "y": 3 },
     "parking": { "x": 80, "y": 20 },
     "hiolo": { "x": 92, "y": 37 },
-    "viharaEntry": { "x": 83, "y": 39 },
-    "cafeSide": { "x": 68, "y": 45 },
-    "toiletLiftLine": { "x": 49, "y": 45 },
-    "stairs": { "x": 34.5, "y": 39 }
+    "viharaEntry": { "x": 83, "y": 32 },
+    "jalanUmat": { "x": 60, "y": 31.5 },
+    "stairs": { "x": 34.5, "y": 31.5 }
   }
 }

@@ -46,9 +46,8 @@ function applyScenarioDefaults(){
   ui.shoeServiceMax.value = s.serviceSeconds.max;
 }
 
-function venueRoute(){
-  return venue.flow.ingress.map(name => venue.waypoints[name]).filter(Boolean);
-}
+function routeNames(){ return venue.flow.ingress; }
+function venueRoute(){ return routeNames().map(name => venue.waypoints[name]).filter(Boolean); }
 
 function reset(){
   agents = [];
@@ -86,6 +85,24 @@ function serviceSeconds(){
   return triangular(c.min, c.avg, c.max);
 }
 
+function spreadTarget(a, stage){
+  const name = routeNames()[stage];
+  const base = venue.waypoints[name];
+  if(!base) return base;
+  const lane = ((a.id % 7) - 3) / 3;
+  if(name === 'hiolo') return { x: base.x + lane * 1.2, y: base.y + lane * .8 };
+  if(name === 'viharaEntry') return { x: base.x, y: base.y + lane * .8 };
+  if(name === 'jalanUmatEntry' || name === 'jalanUmat' || name === 'stairsEntry') return { x: base.x, y: base.y + lane * 1.0 };
+  return base;
+}
+
+function setPathForStage(a, stage){
+  a.routeStage = stage;
+  const target = spreadTarget(a, stage);
+  a.path = nav.findPath({x:a.x,y:a.y}, target);
+  a.pathIndex = Math.min(1, a.path.length - 1);
+}
+
 function setPath(a, target){
   a.path = nav.findPath({x:a.x,y:a.y}, target);
   a.pathIndex = Math.min(1, a.path.length - 1);
@@ -107,7 +124,8 @@ function spawnAgent(){
     path: [],
     pathIndex: 0
   };
-  setPath(a, scenario.shoeDeposit.enabled ? scenario.shoeDeposit.queuePoint : venueRoute()[1]);
+  if(scenario.shoeDeposit.enabled) setPath(a, scenario.shoeDeposit.queuePoint);
+  else setPathForStage(a, 1);
   agents.push(a);
 }
 
@@ -132,6 +150,13 @@ function blocked(x,y,a){
   return agents.some(b => b !== a && !b.done && b.state !== 'queue' && b.state !== 'service' && Math.hypot(x-b.x,y-b.y) < BODY_RADIUS*2);
 }
 
+function tryStep(a, vx, vy, step){
+  const nx = a.x + vx * step, ny = a.y + vy * step;
+  if(blocked(nx,ny,a)) return false;
+  a.x = nx; a.y = ny;
+  return true;
+}
+
 function move(a,dt){
   if(!a.path?.length) return true;
   const node = a.path[Math.min(a.pathIndex,a.path.length-1)];
@@ -140,11 +165,19 @@ function move(a,dt){
     if(a.pathIndex < a.path.length-1){ a.pathIndex++; return false; }
     return true;
   }
+
   const sep = separationVector(a);
   let vx = dx/d + sep.x*1.5, vy = dy/d + sep.y*1.5;
   const l = Math.hypot(vx,vy) || 1; vx/=l; vy/=l;
-  const step = Math.min(d,a.speed*dt), nx=a.x+vx*step, ny=a.y+vy*step;
-  if(!blocked(nx,ny,a)){ a.x=nx; a.y=ny; }
+  const step = Math.min(d,a.speed*dt);
+  if(tryStep(a,vx,vy,step)) return false;
+
+  // Local steering avoids gridlock when several agents meet on the same A* line.
+  for(const angle of [Math.PI/6,-Math.PI/6,Math.PI/3,-Math.PI/3,Math.PI/2,-Math.PI/2]){
+    const cs=Math.cos(angle),sn=Math.sin(angle);
+    const sx=vx*cs-vy*sn,sy=vx*sn+vy*cs;
+    if(tryStep(a,sx,sy,step*.75)) return false;
+  }
   return false;
 }
 
@@ -186,8 +219,10 @@ function startShoeServices(){
 function finishShoeService(a){
   a.state = 'walking';
   a.serviceSlot = null;
-  a.routeStage = 1;
-  setPath(a, venueRoute()[a.routeStage]);
+  // Shoe deposit is already inside the parking area. Do not force everyone
+  // through one artificial parking waypoint; continue directly to Hiolo.
+  const hioloStage = Math.max(1, routeNames().indexOf('hiolo'));
+  setPathForStage(a, hioloStage);
 }
 
 function update(dt){
@@ -211,9 +246,9 @@ function update(dt){
         a.queueEnterTime = simTime;
         a.path = [];
       } else {
-        a.routeStage++;
-        if(a.routeStage >= r.length){ a.done=true; a.state='done'; }
-        else setPath(a,r[a.routeStage]);
+        const nextStage = a.routeStage + 1;
+        if(nextStage >= r.length){ a.done=true; a.state='done'; }
+        else setPathForStage(a,nextStage);
       }
     }
   }
@@ -236,7 +271,8 @@ function point(x,y){const{pad,s}=transform();return[pad+x*s,pad+y*s]}
 
 function visualRoute(){
   const r=venueRoute();
-  return [venue.waypoints.spawn, scenario.shoeDeposit.queuePoint, scenario.shoeDeposit.servicePoint, ...r.slice(1)];
+  const hioloIndex=Math.max(1,routeNames().indexOf('hiolo'));
+  return [venue.waypoints.spawn, scenario.shoeDeposit.queuePoint, scenario.shoeDeposit.servicePoint, ...r.slice(hioloIndex)];
 }
 
 function drawRoute(){

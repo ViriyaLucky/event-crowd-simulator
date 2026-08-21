@@ -10,9 +10,9 @@
   "shoeDeposit": {
     "enabled": true,
     "label": "Penitipan Sepatu",
-    "zone": { "x": 41, "y": 6, "w": 18, "h": 5 },
-    "queuePoint": { "x": 50, "y": 15 },
-    "servicePoint": { "x": 50, "y": 8.5 },
+    "zone": { "x": 41, "y": 21, "w": 18, "h": 5 },
+    "queuePoint": { "x": 50, "y": 18 },
+    "servicePoint": { "x": 50, "y": 23.5 },
     "picCount": 6,
     "serviceSeconds": {
       "min": 8,

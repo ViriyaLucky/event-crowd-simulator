@@ -1,0 +1,23 @@
+{
+  "id": "poc-ingress",
+  "name": "POC Ingress with Shoe Deposit",
+  "walkingSpeed": {
+    "min": 0.8,
+    "average": 1.1,
+    "max": 1.4,
+    "unit": "m/s"
+  },
+  "shoeDeposit": {
+    "enabled": true,
+    "label": "Penitipan Sepatu",
+    "zone": { "x": 43, "y": 6, "w": 14, "h": 4 },
+    "queuePoint": { "x": 50, "y": 12 },
+    "servicePoint": { "x": 50, "y": 8 },
+    "picCount": 6,
+    "serviceSeconds": {
+      "min": 8,
+      "average": 12,
+      "max": 20
+    }
+  }
+}

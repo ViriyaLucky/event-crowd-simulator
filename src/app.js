@@ -6,7 +6,12 @@ const ui = Object.fromEntries(['simTime','spawned','completed','runStatus','atte
 let venue, nav, agents=[], simTime=0, running=false, last=performance.now(), nextId=1;
 const BODY_RADIUS=.28, COMFORT_RADIUS=.75, MAX_NEIGHBOR_RADIUS=1.8;
 
-async function init(){venue=await fetch('./data/venues/wihara-floor1.json').then(r=>r.json());nav=new NavigationGrid(venue,1);reset();requestAnimationFrame(loop)}
+async function init(){
+  venue = await fetch(`./data/venues/wihara-floor1.json?v=${Date.now()}`, { cache: 'no-store' }).then(r => r.json());
+  nav = new NavigationGrid(venue,1);
+  reset();
+  requestAnimationFrame(loop);
+}
 function route(){return venue.flow.ingress.map(name=>venue.waypoints[name]).filter(Boolean)}
 function reset(){agents=[];simTime=0;nextId=1;running=true;ui.runStatus.textContent='RUNNING';ui.pause.textContent='Pause'}
 function setPath(a,target){a.path=nav.findPath({x:a.x,y:a.y},target);a.pathIndex=Math.min(1,a.path.length-1)}
